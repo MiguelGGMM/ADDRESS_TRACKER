@@ -36,6 +36,10 @@ class CacheManager {
         return answer;
     }
 
+    GetWalletsListened = async (user) => {
+        return this.listeners_wallets[user];
+    }
+
     AddWalletListener = async (userId, address, label = '') => {
         this.listeners_wallets[userId] ??= [];
         let indexExistingObj = _.findIndex(this.listeners_wallets[userId], x => x.address == address);
@@ -55,7 +59,7 @@ class CacheManager {
 
     RemoveWalletListener = async (userId, address) => {
         if(!this.listeners_wallets[userId]) return;
-        RemoveWalletListenerBase(userId, _.findIndex(this.listeners_wallets[userId], x => x.address == address));
+        this.RemoveWalletListenerBase(userId, _.findIndex(this.listeners_wallets[userId], x => x.address == address));
     }
 
     RemoveWalletListenerBase = async (userId, index) => {

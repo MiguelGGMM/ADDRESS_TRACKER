@@ -4,7 +4,7 @@ const getTelegramCommands = () => {
     return [        
         { command: '/t', commandRegex: /\/t(.*?)/, _function: undefined, description: 'Track wallet, /t blockchain wallet label(optional)'},
         { command: '/r', commandRegex: /\/r(.*?)/, _function: undefined, description: 'Untrack wallet, /r blockchain wallet' },
-        { command: '/show', commandRefex: /\/show/, _function: undefined, description: 'Show current tracked wallets' },
+        { command: '/show', commandRegex: /\/show/, _function: undefined, description: 'Show current tracked wallets' },
         { command: '/help', commandRegex: /\/help/, _function: undefined, description: 'How to use this bot' },
         { command: '/decode', commandRegex: /\/decode(.*?)/, _function: undefined, description: 'Decode a transaction, /decode transactionData'}
     ];

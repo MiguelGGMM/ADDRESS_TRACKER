@@ -24,9 +24,10 @@ class ChainManager {
     static staticInitializeBot(botToken, telegramCommands){
         if(!ChainManager.bot){
             ChainManager.bot = TelegramService.initialize(botToken);
+            ChainManager.bot.setMyCommands(telegramCommands);
             for(const tgCommand of telegramCommands){
                 ChainManager.bot.onText(tgCommand.commandRegex, tgCommand._function);
-            }
+            }            
         }
     }
 
@@ -43,6 +44,10 @@ class ChainManager {
 
     RemoveWalletListener = async (userId, address) => {
         this.listeners_wallets_lock.acquire(this.key_lock, (async () => this.cacheManager.RemoveWalletListener(userId, address)));
+    }
+
+    GetWalletsListened = async (userId) => {
+        return this.cacheManager.GetWalletsListened(userId);
     }
 
     ListenTransactions = () => {

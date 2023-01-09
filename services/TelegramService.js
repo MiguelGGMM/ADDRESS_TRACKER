@@ -12,10 +12,15 @@ class TelegramService {
 
         const instance = new TelegramService();
         const bot = new TelegramBot(token, {polling: true});
-        instance.bot = bot;
+        bot.on("polling_error", console.log);
+        instance.bot = bot;        
 
         TelegramService.instance = instance;
         return TelegramService.instance;
+    }
+
+    setMyCommands = (commands) => {
+        this.bot.setMyCommands(commands);
     }
 
     sendMessage = (chatId, message, opts) => {
