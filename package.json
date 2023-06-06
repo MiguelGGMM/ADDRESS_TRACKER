@@ -1,16 +1,20 @@
 {
-    "name": "ADDRESS_TRACKER",
-    "version": "0.0.0",
+    "name": "address_tracker",
+    "version": "1.0.0",
+    "description": "You can use this bot to track addresses on different EVM blockchains",
     "private": true,
     "scripts": {
         "start": "node app.js",
         "watch": "NODE_ENV=development node app.js",
-        "deploy": "sudo git pull && sudo pm2 flush && sudo pm2 restart DevTracker && sudo pm2 log",
+        "deploy": "sudo git pull && sudo pm2 flush && sudo pm2 restart address_tracker && sudo pm2 log",
         "dev": "nodemon app.js"
     },
+    "author": "MiguelGGMM",
+    "license": "MIT",
     "dependencies": {
         "async-lock": "^1.4.0",
         "axios": "^0.27.2",
+        "chalk": "^4.1.2",
         "debug": "~2.6.9",
         "dotenv": "^16.0.0",
         "ethers": "^5.6.5",

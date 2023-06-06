@@ -7,11 +7,9 @@ dotenv.config({
     path: path.resolve(__dirname + '/.env')
 });
 
-// Initialize cronjob and database
-//const { Database } = require("./database");
 require("./dev_tracker");
 
-console.log(`[DevTracker] Just starting application in mode daemon. No port opened`);
+console.log(`[ADDRESS_TRACKER] Just starting application in mode daemon. No port opened`);
 console.log(`Environment: ${process.env.NODE_ENV}`)
 
 String.prototype.break = function (numBreaks) {
@@ -22,8 +20,5 @@ String.prototype.break = function (numBreaks) {
 
     return str;
 };
-
-// Fetch instance for database
-//Database.getInstance();
 
 /* module.exports = app; */

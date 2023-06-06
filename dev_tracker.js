@@ -47,82 +47,100 @@ initialize_dev_tracker = async() => {
 }
 
 //#region Commands receivers
-const onMsgTrackWallet = async (msg, match) => {
-    let [ , chain, address, label ] = match.input.split(' ');
-    let message = `Unknown error`;
-    if(supported_chains.includes(chain)){
-        address = getAddressFromText(address);
-        if(address){
-            await chainManagers[chain].AddWalletListener(msg.chat.id, address, label);
-            message = `Listening transactions from ${address} on ${chain} network` + (label ? ` with label '${label}'` : ``);
+const onMsgTrackWallet = async (msg) => {    
+    try {
+        let [ , chain, address, label ] = msg.text.split(' ');
+        let message = `Unknown error`;
+        chain = chain.toLowerCase();
+        if(supported_chains.includes(chain)){
+            address = getAddressFromText(address);
+            if(address){
+                await chainManagers[chain].AddWalletListener(msg.chat.id, address, label);
+                message = `Listening transactions from ${address} on ${chain} network` + (label ? ` with label '${label}'` : ``);
+            }
+            else{
+                message = `Invalid address: ${address}`;
+            }
+        }else{
+            message = `Unrecognized chain: ${chain}`;
         }
-        else{
-            message = `Invalid address: ${address}`;
-        }
-    }else{
-        message = `Unrecognized chain: ${chain}`;
+        ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });
+    } catch(ex) {
+        logError(`Error on track command, text: ${msg.text}, error: ${ex.toString()}`);
     }
-    ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });
 }
 
-const onMsgUnTrackWallet = async (msg, match) => {
-    let [ , chain, address ] = match.input.split(' ');
-    let message = `Unknown error`;
-    if(supported_chains.includes(chain)){
-        address = getAddressFromText(address);
-        if(address){
-            await chainManagers[chain].RemoveWalletListener(msg.chat.id, address);
-            message = `Stopped listening transactions from ${address} on ${chain} network`;
+const onMsgUnTrackWallet = async (msg) => {
+    try {
+        let [ , chain, address ] = msg.text.split(' ');
+        let message = `Unknown error`;
+        chain = chain.toLowerCase();
+        if(supported_chains.includes(chain)){
+            address = getAddressFromText(address);
+            if(address){
+                await chainManagers[chain].RemoveWalletListener(msg.chat.id, address);
+                message = `Stopped listening transactions from ${address} on ${chain} network`;
+            }else{
+                message = `Invalid address: ${address}`;
+            }
         }else{
-            message = `Invalid address: ${address}`;
+            message = `Unrecognized chain: ${chain}`;
         }
-    }else{
-        message = `Unrecognized chain: ${chain}`;
+        ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });
+    } catch(ex) {
+        logError(`Error on untrack command, text: ${msg.text}, error: ${ex.toString()}`);
     }
-    ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });
 }
 
 const onMsgShowTracks = async (msg) => {
-    let message = '';
-    for(const chain of supported_chains){
-        let walletsListened = await chainManagers[chain].GetWalletsListened(msg.chat.id);
-        if(walletsListened){
-            message += `On ${chain} chain:`.break(1);
-            for(const walletListened of walletsListened){
-                message += (`Address: ${walletListened.address}` + (walletListened.label ? ` with label ${walletListened.label}` : ``)).break(1);
+    try {
+        let message = '';
+        for(const chain of supported_chains){
+            let walletsListened = await chainManagers[chain].GetWalletsListened(msg.chat.id);
+            if(walletsListened){
+                message += `On ${chain} chain:`.break(1);
+                for(const walletListened of walletsListened){
+                    message += (`Address: ${walletListened.address}` + (walletListened.label ? ` with label ${walletListened.label}` : ``)).break(1);
+                }
+                message = message.break(1);
             }
-            message = message.break(1);
         }
-    }
-    if(message){
-        ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });    
-    }else{
-        ChainManager.bot.sendMessage(msg.chat.id, `No tracks registered`, { reply_to_message_id: msg.message_id });    
+        if(message){
+            ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });    
+        }else{
+            ChainManager.bot.sendMessage(msg.chat.id, `No tracks registered`, { reply_to_message_id: msg.message_id });    
+        }
+    } catch(ex) {
+        logError(`Error on show tracks command, text: ${msg.text}, error: ${ex.toString()}`);
     }
 }
 
-const onMsgDecodeTx = async (msg, match) => {
-    let [ , transactionData ] = match.input.split(' ');
-    let methodObj;
-    let error = false;
+const onMsgDecodeTx = async (msg) => {
+    try {
+        let [ , transactionData ] = msg.text.split(' ');
+        let methodObj;
+        let error = false;
 
-    try{
-        methodObj = await MethodsService.getMethodName(transactionData);
-    }catch{ error = true; }
+        try{
+            methodObj = await MethodsService.getMethodName(transactionData);
+        }catch{ error = true; }
 
-    if(methodObj){
-        let message = `Method name: ${ methodObj.method_name } `.break(1);
-        message += `Parameters:`.break(1);
-        methodObj.request_parameters.forEach(param => {
-            message += param.break(1);
-        });
-        ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });     
-    }else{
-        if(!error){
-            ChainManager.bot.sendMessage(msg.chat.id, 'Can not be decoded', { reply_to_message_id: msg.message_id });
+        if(methodObj){
+            let message = `Method name: ${ methodObj.method_name } `.break(1);
+            message += `Parameters:`.break(1);
+            methodObj.request_parameters.forEach(param => {
+                message += param.break(1);
+            });
+            ChainManager.bot.sendMessage(msg.chat.id, message, { reply_to_message_id: msg.message_id });     
         }else{
-            ChainManager.bot.sendMessage(msg.chat.id, 'Error', { reply_to_message_id: msg.message_id });
+            if(!error){
+                ChainManager.bot.sendMessage(msg.chat.id, 'Can not be decoded', { reply_to_message_id: msg.message_id });
+            }else{
+                ChainManager.bot.sendMessage(msg.chat.id, 'Error', { reply_to_message_id: msg.message_id });
+            }
         }
+    } catch(ex) {
+        logError(`Error on decode tx command, text: ${msg.text}, error: ${ex.toString()}`);
     }
 }
 
@@ -132,10 +150,10 @@ const onMsgHelp = async (msg) => {
 //#endregion
 
 const getAddressFromText = (text) => {
-    const regex = /0x[0-9a-fA-F]{40}/g;
-    const matches = text.match(regex);
+    //const regex = /0x[0-9a-fA-F]{40}/g;
+    const matches = text.replace(/[^a-fA-F0-9|0x]/g, '').match(/0x[a-fA-F0-9]{40}/gim);   
     if (matches && matches.length) {
-        return matches[0];
+        return MethodsService.getAddressFormatted(matches[0]);
     }
     return null;
 }
@@ -146,6 +164,18 @@ function log(...data) {
             console.log(chalk.green(JSON.stringify(data[idx])));
         } else {
             console.log(chalk.green(data[idx]));
+        }
+    }
+}
+
+function logError(...data) {
+    for(var idx in data) {
+        if(typeof data[idx] != 'function') {
+            if(typeof data[idx] === 'object' || Array.isArray(data[idx])) {
+                console.log(chalk.red(JSON.stringify(data[idx])));
+            } else {
+                console.log(chalk.red(data[idx]));
+            }
         }
     }
 }

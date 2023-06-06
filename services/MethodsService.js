@@ -1,4 +1,5 @@
-const AbiCoder = require('ethers/utils').AbiCoder;
+const AbiCoder = require('ethers').utils.AbiCoder;
+const getAddress = require('ethers').utils.getAddress;
 const _4bytesBaseURL = 'https://www.4byte.directory/api/v1/signatures/';
 const { blacklist_methods, ignored_methods } = require('../methods/names.js');
 const axios = require('axios');
@@ -101,6 +102,10 @@ class MethodsService {
             obj.push(types[index] + ': ' + arg);
             return obj;
         }, []);
+    }
+
+    static getAddressFormatted(_address) {
+        return getAddress(_address);
     }
 }
 
